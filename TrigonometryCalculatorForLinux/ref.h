@@ -1,10 +1,11 @@
 #pragma once
 #include <termio.h>
 
-enum mode_t
+enum calmode_t
 {
 	RAD,
 	DEG
 };
 
 int _getch();
+

@@ -36,7 +36,7 @@ int Interaction::Exec()
 		}
 		else if (expression == "clear")
 		{
-			system("cls");
+			system("clear");
 		}
 		else if (expression.substr(0, 12) == "history size" && expression.size() > 13)
 		{
@@ -94,7 +94,7 @@ void Interaction::ReadExpression()
 	ch = _getch();
 	while (ch != '\r')
 	{
-		if (ch == '\b') //backspace
+		if (ch == '\177') //backspace
 		{
 			if (cursor_position > 0)
 			{
@@ -106,17 +106,19 @@ void Interaction::ReadExpression()
 		{
 			;
 		}
-		else if (ch == -32)
+		else if (ch == '\033')
 		{
 			ch = _getch();
-			if (ch == 83) //delete
+			ch = _getch();
+			if (ch == 51) //delete
 			{
 				if (cursor_position < history_edit[index_history].size())
 				{
 					history_edit[index_history] = history_edit[index_history].substr(0, cursor_position) + history_edit[index_history].substr(cursor_position + 1, history_edit[index_history].size() - cursor_position);
 				}
+				_getch();
 			}
-			if (ch == 72) //up
+			if (ch == 65) //up
 			{
 				if (index_history != 0)
 					index_history--;
@@ -124,7 +126,7 @@ void Interaction::ReadExpression()
 					index_history = history_edit.size() - 1;
 				cursor_position = history_edit[index_history].size();
 			}
-			else if (ch == 80) //down
+			else if (ch == 66) //down
 			{
 				if (index_history != history_edit.size() - 1)
 					index_history++;
@@ -132,12 +134,12 @@ void Interaction::ReadExpression()
 					index_history = 0;
 				cursor_position = history_edit[index_history].size();
 			}
-			else if (ch == 75) //left
+			else if (ch == 68) //left
 			{
 				if (cursor_position > 0)
 					cursor_position--;
 			}
-			else if (ch == 77) //right
+			else if (ch == 67) //right
 			{
 				if (cursor_position < history_edit[index_history].size())
 					cursor_position++;

@@ -3,7 +3,7 @@
 #include <math.h>
 #include <algorithm>
 
-Calculation::Calculation(string expr, mode_t m)
+Calculation::Calculation(string expr, calmode_t m)
 {
 	expression = expr;
 	res = 0;
@@ -18,9 +18,9 @@ Calculation::Calculation(string expr, mode_t m)
 	else // no error
 	{
 		long double integ = floor((long double)res * 1e6);
-		if (res * 1e6 - integ>0.5)
+		if (res * 1e6 - integ > 0.5)
 			integ++;
-		else if (res * 1e6 - integ<-0.5)
+		else if (res * 1e6 - integ < -0.5)
 			integ--;
 		res = integ / 1e6;
 		stringstream ss;
@@ -40,7 +40,7 @@ string Calculation::Res()
 	return output;
 }
 
-void Calculation::SetMode(mode_t m)
+void Calculation::SetMode(calmode_t m)
 {
 	mode = m;
 }
@@ -66,17 +66,17 @@ vector<word_t> Calculation::DivWords(string expr)
 			{
 				if (innumber == true) // it's a number
 				{
-					if (pointer + len < expr.size() && expr[pointer + len] == '.')
+					if (pointer + len <= expr.size() && expr[pointer + len - 1] == '.')
 					{
 						if (meetdot == false)
 							meetdot = true;
 						else
 						{
 							GenErrorInfo(pointer, len, "Too many dots in a real number.");
+							break;
 						}
 					}
-					if (pointer + len == expr.size()
-						|| (expr[pointer + len] != '.' && !(expr[pointer + len] >= '0' && expr[pointer + len] <= '9')))
+					if (pointer + len == expr.size() || (expr[pointer + len] != '.' && !(expr[pointer + len] >= '0' && expr[pointer + len] <= '9')))
 					{
 						string number_str = expr.substr(pointer, len);
 						double number;
@@ -124,7 +124,7 @@ vector<word_t> Calculation::DivWords(string expr)
 		if (ret[i].type == OPERATOR && ret[i].val.oprt == SUB)
 		{
 			if (!(i > 0 &&
-				(ret[i - 1].type == OPERAND || ret[i - 1].val.oprt == RPAREN)))
+				  (ret[i - 1].type == OPERAND || ret[i - 1].val.oprt == RPAREN)))
 			{
 				ret[i].val.oprt = NEG;
 			}
@@ -140,77 +140,6 @@ vector<word_t> Calculation::DivWords(string expr)
 void Calculation::Operate(vector<word_t> word_seq)
 {
 	//error detection
-	if (!(word_seq.begin()->type == OPERAND
-		|| word_seq.begin()->val.oprt == SIN || word_seq.begin()->val.oprt == COS || word_seq.begin()->val.oprt == TAN
-		|| word_seq.begin()->val.oprt == NEG
-		|| word_seq.begin()->val.oprt == LPAREN)) // beginning
-	{
-		GenErrorInfo(word_seq.begin()->offset, word_seq.begin()->length, "Invalid expression beginning.");
-		return;
-	}
-	else if (!((word_seq.end() - 1)->type == OPERAND
-		|| (word_seq.end() - 1)->val.oprt == RPAREN)) // ending
-	{
-		GenErrorInfo((word_seq.end() - 1)->offset, (word_seq.end() - 1)->length, "Invalid expression ending.");
-		return;
-	}
-	else // neighbor relationship
-	{
-		for (auto i = word_seq.begin(); i < word_seq.end() - 1; i++)
-		{
-			if (i->val.oprt == ADD || i->val.oprt == SUB || i->val.oprt == MUL || i->val.oprt == DIV || i->val.oprt == NEG)
-			{
-				if (!((i + 1)->type == OPERAND
-					|| (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN
-					|| (i + 1)->val.oprt == LPAREN
-					|| (i + 1)->val.oprt == NEG))
-				{
-					GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after arithmetic operators.");
-					return;
-				}
-			}
-			else if (i->val.oprt == SIN || i->val.oprt == COS || i->val.oprt == TAN)
-			{
-				if (!((i + 1)->type == OPERAND
-					|| (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN
-					|| (i + 1)->val.oprt == LPAREN
-					|| (i + 1)->val.oprt == NEG))
-				{
-					GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after trigonometric operators.");
-					return;
-				}
-			}
-			else if (i->type == OPERAND)
-			{
-				if (!((i + 1)->val.oprt == RPAREN
-					|| (i + 1)->val.oprt == ADD || (i + 1)->val.oprt == SUB || (i + 1)->val.oprt == MUL || (i + 1)->val.oprt == DIV))
-				{
-					GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after real number.");
-					return;
-				}
-			}
-			else if (i->val.oprt == LPAREN)
-			{
-				if (!((i + 1)->type == OPERAND
-					|| (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN
-					|| (i + 1)->val.oprt == NEG
-					|| (i + 1)->val.oprt == LPAREN))
-				{
-					GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after left parentheses.");
-					return;
-				}
-			}
-			else if (i->val.oprt == RPAREN)
-			{
-				if (!((i + 1)->val.oprt == RPAREN
-					|| (i + 1)->val.oprt == ADD || (i + 1)->val.oprt == SUB || (i + 1)->val.oprt == MUL || (i + 1)->val.oprt == DIV))
-				{
-					GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after right parentheses.");
-					return;
-				}
-			}
-		}
-	}
 	vector<word_t> paren_stack;
 	for (auto i = word_seq.begin(); i < word_seq.end(); i++) // parenthesis matching
 	{
@@ -232,6 +161,59 @@ void Calculation::Operate(vector<word_t> word_seq)
 	if (!paren_stack.empty())
 	{
 		GenErrorInfo(paren_stack.begin()->offset, paren_stack.begin()->length, "Unpaired left parentheses.");
+		return;
+	}
+	for (auto i = word_seq.begin(); i < word_seq.end() - 1; i++) // neighbor relationship
+	{
+		if (i->val.oprt == ADD || i->val.oprt == SUB || i->val.oprt == MUL || i->val.oprt == DIV || i->val.oprt == NEG)
+		{
+			if (!((i + 1)->type == OPERAND || (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN || (i + 1)->val.oprt == LPAREN || (i + 1)->val.oprt == NEG))
+			{
+				GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after arithmetic operators.");
+				return;
+			}
+		}
+		else if (i->val.oprt == SIN || i->val.oprt == COS || i->val.oprt == TAN)
+		{
+			if (!((i + 1)->type == OPERAND || (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN || (i + 1)->val.oprt == LPAREN || (i + 1)->val.oprt == NEG))
+			{
+				GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after trigonometric operators.");
+				return;
+			}
+		}
+		else if (i->type == OPERAND)
+		{
+			if (!((i + 1)->val.oprt == RPAREN || (i + 1)->val.oprt == ADD || (i + 1)->val.oprt == SUB || (i + 1)->val.oprt == MUL || (i + 1)->val.oprt == DIV))
+			{
+				GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after real number.");
+				return;
+			}
+		}
+		else if (i->val.oprt == LPAREN)
+		{
+			if (!((i + 1)->type == OPERAND || (i + 1)->val.oprt == SIN || (i + 1)->val.oprt == COS || (i + 1)->val.oprt == TAN || (i + 1)->val.oprt == NEG || (i + 1)->val.oprt == LPAREN))
+			{
+				GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after left parentheses.");
+				return;
+			}
+		}
+		else if (i->val.oprt == RPAREN)
+		{
+			if (!((i + 1)->val.oprt == RPAREN || (i + 1)->val.oprt == ADD || (i + 1)->val.oprt == SUB || (i + 1)->val.oprt == MUL || (i + 1)->val.oprt == DIV))
+			{
+				GenErrorInfo((i + 1)->offset, (i + 1)->length, "Invalid keyword after right parentheses.");
+				return;
+			}
+		}
+	}
+	if (!(word_seq.begin()->type == OPERAND || word_seq.begin()->val.oprt == SIN || word_seq.begin()->val.oprt == COS || word_seq.begin()->val.oprt == TAN || word_seq.begin()->val.oprt == NEG || word_seq.begin()->val.oprt == LPAREN)) // beginning
+	{
+		GenErrorInfo(word_seq.begin()->offset, word_seq.begin()->length, "Invalid expression beginning.");
+		return;
+	}
+	else if (!((word_seq.end() - 1)->type == OPERAND || (word_seq.end() - 1)->val.oprt == RPAREN)) // ending
+	{
+		GenErrorInfo((word_seq.end() - 1)->offset, (word_seq.end() - 1)->length, "Invalid expression ending.");
 		return;
 	}
 
@@ -265,28 +247,51 @@ void Calculation::Operate(vector<word_t> word_seq)
 				a_copy = integ / 1e6;
 				switch ((operator_stack.end() - 1)->val.oprt)
 				{
-				case ADD:operand_stack.erase(operand_stack.end() - 2, operand_stack.end()); operand_stack.push_back(b + a); break;
-				case SUB:operand_stack.erase(operand_stack.end() - 2, operand_stack.end()); operand_stack.push_back(b - a); break;
-				case MUL:operand_stack.erase(operand_stack.end() - 2, operand_stack.end()); operand_stack.push_back(b * a); break;
+				case ADD:
+					operand_stack.erase(operand_stack.end() - 2, operand_stack.end());
+					operand_stack.push_back(b + a);
+					break;
+				case SUB:
+					operand_stack.erase(operand_stack.end() - 2, operand_stack.end());
+					operand_stack.push_back(b - a);
+					break;
+				case MUL:
+					operand_stack.erase(operand_stack.end() - 2, operand_stack.end());
+					operand_stack.push_back(b * a);
+					break;
 				case DIV:
 					if (a_copy == 0)
 					{
-						GenErrorInfo((operator_stack.end()-1)->offset, (operator_stack.end() - 1)->length, "Non-zero divisor.");
+						GenErrorInfo((operator_stack.end() - 1)->offset, (operator_stack.end() - 1)->length, "Non-zero divisor.");
 						return;
 					}
-					operand_stack.erase(operand_stack.end() - 2, operand_stack.end()); operand_stack.push_back(b / a); break;
-				case NEG:operand_stack.erase(operand_stack.end() - 1); operand_stack.push_back(-a); break;
-				case SIN:operand_stack.erase(operand_stack.end() - 1);
-					if (mode == RAD) operand_stack.push_back(sin(a));
-					else operand_stack.push_back(sin(a * 3.1415926 / 180));
+					operand_stack.erase(operand_stack.end() - 2, operand_stack.end());
+					operand_stack.push_back(b / a);
 					break;
-				case COS:operand_stack.erase(operand_stack.end() - 1);
-					if (mode == RAD) operand_stack.push_back(cos(a));
-					else operand_stack.push_back(cos(a * 3.1415926 / 180));
+				case NEG:
+					operand_stack.erase(operand_stack.end() - 1);
+					operand_stack.push_back(-a);
 					break;
-				case TAN:operand_stack.erase(operand_stack.end() - 1);
-					if (mode == RAD) operand_stack.push_back(tan(a));
-					else operand_stack.push_back(tan(a * 3.1415926 / 180));
+				case SIN:
+					operand_stack.erase(operand_stack.end() - 1);
+					if (mode == RAD)
+						operand_stack.push_back(sin(a));
+					else
+						operand_stack.push_back(sin(a * 3.1415926 / 180));
+					break;
+				case COS:
+					operand_stack.erase(operand_stack.end() - 1);
+					if (mode == RAD)
+						operand_stack.push_back(cos(a));
+					else
+						operand_stack.push_back(cos(a * 3.1415926 / 180));
+					break;
+				case TAN:
+					operand_stack.erase(operand_stack.end() - 1);
+					if (mode == RAD)
+						operand_stack.push_back(tan(a));
+					else
+						operand_stack.push_back(tan(a * 3.1415926 / 180));
 					break;
 				}
 				operator_stack.erase(operator_stack.end() - 1);
@@ -313,10 +318,7 @@ void Calculation::Operate(vector<word_t> word_seq)
 
 void Calculation::GenErrorInfo(unsigned int pos, unsigned int len, string info)
 {
-	string colored_expr = expression.substr(0, pos)
-		+ "\033[91m" + expression.substr(pos, len) + "\033[0m"
-		+ expression.substr(pos + len, expression.size() - pos - len)
-		+ "\n";
+	string colored_expr = expression.substr(0, pos) + "\033[91m" + expression.substr(pos, len) + "\033[0m" + expression.substr(pos + len, expression.size() - pos - len) + "\n";
 	string point_str;
 	for (unsigned int i = 0; i < pos; i++)
 		point_str += " ";
@@ -379,13 +381,11 @@ relpriority_t PriorityCompare(operator_t a, operator_t b)
 		return HIGH;
 	else if (a == RPAREN || b == RPAREN)
 		return LOW;
-	else if ((a == SIN || a == COS || a == TAN)
-		&& (b == SIN || b == COS || b == TAN))
+	else if ((a == SIN || a == COS || a == TAN) && (b == SIN || b == COS || b == TAN))
 	{
 		return HIGH;
 	}
-	else if ((a == SIN || a == COS || a == TAN)
-		&& (b == NEG))
+	else if ((a == SIN || a == COS || a == TAN) && (b == NEG))
 	{
 		return HIGH;
 	}

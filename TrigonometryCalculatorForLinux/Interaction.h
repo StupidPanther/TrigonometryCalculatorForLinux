@@ -20,7 +20,7 @@ private:
 	vector<string> history_edit;
 	unsigned int history_len;
 	history_mode_t history_mode;
-	mode_t mode;
+	calmode_t mode;
 
 public:
 	Interaction();

@@ -68,13 +68,13 @@ private:
 	string error_info;
 	double res;
 	string output;
-	mode_t mode;
+	calmode_t mode;
 
 public:
-	Calculation(string expr, mode_t m);
+	Calculation(string expr, calmode_t m);
 	~Calculation();
 	string Res();
-	void SetMode(mode_t m);
+	void SetMode(calmode_t m);
 
 private:
 	vector<word_t> DivWords(string expr);
