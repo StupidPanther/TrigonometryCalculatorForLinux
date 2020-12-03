@@ -1,6 +1,6 @@
 # PROJECT 3 - TRIGONOMETRY CALCULATOR
 
-> Auther: stupidpanther 
+> Author: stupidpanther 
 >
 > E-mail: stupidpanther@163.com
 
