@@ -1,5 +1,4 @@
 #include "Interaction.h"
-#include <conio.h>
 #include <sstream>
 
 Interaction::Interaction()
