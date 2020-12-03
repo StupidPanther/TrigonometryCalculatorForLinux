@@ -136,9 +136,13 @@ This part focuses on the contents mentioned above.
 
 	Addition, subtraction, multiplication, division, negative operation, sine, cosine, tangent.
 
+	![](./assets/1.png)
+
 + **Representation of real numbers and constant numbers**
 
 	Real numbers are represented in decimal, with no more than one dot not at the beginning of the number. keyword Pi means 3.1415926. (case insensitive)
+
+	![](./assets/2.png)
 
 + **Priority of the operators**
 
@@ -151,6 +155,8 @@ This part focuses on the contents mentioned above.
 
 + **History**
 
+	To view history, press up and down arrow keys.
+
 	Two type of history record mode are provided. The simple mode only record successfully executed commands while the full mode record all commands.
 
 	It is simple mode when program started. You can use command "history mode simple" or "history mode full" to change it.
@@ -160,9 +166,23 @@ This part focuses on the contents mentioned above.
 
 	Error information indicates where and what type the error is when you meet it.
 
+	![](./assets/3.png)
+
 + **Radian and degree system**
 
 	It uses radian system when the program started. You can use command "deg" or "rad" to change it.
+
+	![](./assets/4.png)
+
++ **Other commands**
+
+	+ `clear`
+
+	Clear the window.
+
+	+ `quit` or `exit`
+
+	Quit the program.
 
 ### Special Thanks
 
